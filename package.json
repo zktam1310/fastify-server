@@ -12,15 +12,18 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@fastify/jwt": "^6.7.1",
     "@fastify/mongodb": "^7.0.0",
     "dayjs": "^1.11.7",
     "fastify": "^4.15.0",
     "fastify-plugin": "^4.5.0",
+    "jsonwebtoken": "^9.0.0",
     "pino": "^8.11.0",
     "pino-pretty": "^10.0.0"
   },
   "devDependencies": {
     "@tsconfig/node18": "^1.0.1",
+    "@types/jsonwebtoken": "^9.0.1",
     "@types/node": "^18.15.11",
     "dotenv": "^16.0.3",
     "tsx": "^3.12.6",

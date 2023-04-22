@@ -7,3 +7,9 @@ export interface IRegisterBody {
   email: string;
   password: string
 }
+
+export interface IJwtPayload {
+  email: string;
+  id: string;
+  iat: number
+}

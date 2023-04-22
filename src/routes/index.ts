@@ -1,7 +1,9 @@
 import AuthRoutePlugin from "./auth.route";
+import UserRoutePlugin from "./user.route";
 
 const routesPlugin = [
-  AuthRoutePlugin
+  AuthRoutePlugin,
+  UserRoutePlugin
 ]
 
 export default routesPlugin;

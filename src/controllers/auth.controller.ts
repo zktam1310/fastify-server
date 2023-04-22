@@ -3,6 +3,8 @@ import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ILoginBody, IRegisterBody } from '../interfaces/auth.interface';
+import jwt from 'jsonwebtoken';
+import environments from '../environments';
 
 dayjs.extend(utc);
 
@@ -11,15 +13,21 @@ export const loginController = async (fastify: FastifyInstance ,request: Fastify
   const users = fastify.mongo.db.collection<IUser>("users");
 
   try {
-    const existingUser = await users.findOne({ email });
-    if (!existingUser || existingUser.password !== password)
+    const user = await users.findOne({ email });
+    if (!user || user.password !== password)
       return reply.status(401).send({
         statusCode: 401,
         error: "Authentication Failed",
         message: "Invalid email/password."
       });
 
-    reply.code(201).send(existingUser);
+    const signPayload = {
+      email: user.email,
+      id: user._id
+    };
+    const token = fastify.jwt.sign(signPayload);
+    reply.code(201).send({...user, token});
+
   } catch (err) {
     reply.code(500).send(err);
   }

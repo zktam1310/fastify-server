@@ -2,6 +2,7 @@ import fastify from 'fastify';
 import environments from './environments';
 import routesPlugin from './routes';
 import fastifyMongodb from '@fastify/mongodb';
+import fastifyJwt from '@fastify/jwt';
 
 const envToLogger = {
   development: {
@@ -30,7 +31,27 @@ process.on('SIGTERM', () => {
   });
 });
 
-server.register((fastifyMongodb), { url: environments.MONGO_URI});
+server.register((fastifyMongodb), { url: environments.MONGO_URI });
+
+server.register(require('@fastify/jwt'), {
+  secret: environments.JWT_SECRET
+})
+
+server.addHook("onRequest", async (request, reply) => {
+  const publicRoutes = [
+    "auth/login",
+    "auth/register"
+  ]
+
+  if (publicRoutes.includes(request.url.replace("/api/v1/", ""))) return;
+
+  try {
+    await request.jwtVerify()
+  } catch (err) {
+    reply.send(err)
+  }
+})
+
 
 // Register route plugins
 for (let route of routesPlugin) {
