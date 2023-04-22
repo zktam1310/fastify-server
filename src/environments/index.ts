@@ -10,7 +10,13 @@ if (env.ENV_NODE !== 'production') {
 const environments = {
   PORT: env.PORT ?? 8080,
   MONGO_URI: env.MONGO_URI,
-  PG_URI: env.PG_URI
+}
+
+for (let env of Object.keys(environments)) {
+  if (environments[env] == undefined) {
+    console.log(`${env} is missing in environments`);
+    process.exit(0);
+  }
 }
 
 export default environments;
