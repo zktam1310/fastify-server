@@ -10,6 +10,9 @@ const AuthRoutePlugin: FastifyPluginCallback = (fastify: FastifyInstance, option
 
   fastify.post<{ Body: ILoginBody }>(base+ '/login', {
     schema: loginBodySchema,
+    validatorCompiler: ({ schema, method, url, httpPart }) => {
+      return data => schema.validate(data)
+    },
     handler: async (request, reply) => {
       return loginController(fastify, request, reply);
     },
@@ -17,6 +20,9 @@ const AuthRoutePlugin: FastifyPluginCallback = (fastify: FastifyInstance, option
 
   fastify.post<{ Body: IRegisterBody }>(base+ '/register', {
     schema: registerBodySchema,
+    validatorCompiler: ({ schema, method, url, httpPart }) => {
+      return data => schema.validate(data)
+    },
     handler: async (request, reply) => {
       return registerController(fastify, request, reply);
     },

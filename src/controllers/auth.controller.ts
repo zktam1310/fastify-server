@@ -2,7 +2,7 @@ import { EUserRole, IUser } from '../interfaces/user.interface';
 import dayjs from 'dayjs';
 import utc from 'dayjs/plugin/utc';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
-import { ETwoFAStep, IJwtPayload, ILoginBody, IRegisterBody, ITwoFABody } from '../interfaces/auth.interface';
+import { ELoginStep, ETwoFAStep, IJwtPayload, ILoginBody, IRegisterBody, ITwoFABody } from '../interfaces/auth.interface';
 
 import * as speakeasy from 'speakeasy';
 import * as qrcode from 'qrcode';
@@ -35,12 +35,31 @@ export const loginController = async (fastify: FastifyInstance, request: Fastify
       }
     } else {
       switch (step) {
-        case 1:
+        case ELoginStep.Primary:
           response = {
             activeTwoFA: true
           }
           break;
-        case 2:
+        case ELoginStep.TwoFA:
+          const decryptedSecret = CryptoJS.AES.decrypt(user.twoFA.secret, environments.TWOFA_ENCRYPT_KEY).toString(CryptoJS.enc.Utf8);
+
+          const twoFAValidated = validateTwoFA({
+            code: code,
+            secret: decryptedSecret
+          });
+
+          if (twoFAValidated) {
+            delete user.twoFA;
+            response = {
+              ...user,
+              token
+            }
+          } else
+            return reply.status(401).send({
+              statusCode: 401,
+              error: "Authentication Failed",
+              message: "Invalid Two FA code."
+            });
 
           break;
 
