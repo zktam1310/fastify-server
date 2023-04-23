@@ -5,7 +5,7 @@ export enum EUserRole {
 }
 
 interface ITwoFA {
-  hasVerified: boolean;
+  verified: boolean;
   secret: string;
 }
 

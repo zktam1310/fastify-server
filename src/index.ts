@@ -3,6 +3,7 @@ import environments from './environments';
 import routesPlugin from './routes';
 import fastifyMongodb from '@fastify/mongodb';
 import fastifyJwt from '@fastify/jwt';
+import fastifyJoi from 'fastify-joi';
 
 const envToLogger = {
   development: {
@@ -33,9 +34,11 @@ process.on('SIGTERM', () => {
 
 server.register((fastifyMongodb), { url: environments.MONGO_URI });
 
-server.register(require('@fastify/jwt'), {
+server.register(fastifyJwt, {
   secret: environments.JWT_SECRET
 })
+
+server.register(fastifyJoi);
 
 server.addHook("onRequest", async (request, reply) => {
   const publicRoutes = [

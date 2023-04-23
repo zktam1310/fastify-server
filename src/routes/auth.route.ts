@@ -1,8 +1,8 @@
 import { FastifyInstance, FastifyPluginCallback } from 'fastify';
-import { loginBodySchema, registerBodySchema } from '../validators/auth.validator';
+import { loginBodySchema, registerBodySchema, twoFABodySchema } from '../validators/auth.validator';
 import { API_ROUTE } from '../constants';
-import { loginController, registerController } from '../controllers/auth.controller';
-import { ILoginBody, IRegisterBody } from '../interfaces/auth.interface';
+import { loginController, registerController, twoFAController } from '../controllers/auth.controller';
+import { ILoginBody, IRegisterBody, ITwoFABody } from '../interfaces/auth.interface';
 
 
 const AuthRoutePlugin: FastifyPluginCallback = (fastify: FastifyInstance, options, done) => {
@@ -22,7 +22,18 @@ const AuthRoutePlugin: FastifyPluginCallback = (fastify: FastifyInstance, option
     },
   });
 
+  fastify.post<{ Body: ITwoFABody }>(base+ '/twoFA', {
+    schema: twoFABodySchema,
+    validatorCompiler: ({ schema, method, url, httpPart }) => {
+      return data => schema.validate(data)
+    },
+    handler: async (request, reply) => {
+      return twoFAController(fastify, request, reply);
+    },
+  });
+
   done();
 };
+
 
 export default AuthRoutePlugin;
