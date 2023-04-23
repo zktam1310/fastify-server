@@ -13,6 +13,7 @@ export const meController = async (fastify: FastifyInstance, request: FastifyReq
 
   try {
     const user = await users.findOne({ email });
+    if (user.twoFA) delete user.twoFA;
     reply.code(201).send(user);
   } catch (err) {
     reply.code(500).send(err);
