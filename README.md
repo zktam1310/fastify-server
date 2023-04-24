@@ -2,6 +2,12 @@
 
 A backend server in Fastify and MongoDB with Typescript.
 
+## Features
+
+- User Authentication
+  - Two FA Authentication
+  - JWT Web Token
+
 ## Prerequisites
 
 - NODE v18 and above
