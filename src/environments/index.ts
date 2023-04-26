@@ -10,6 +10,7 @@ if (env.ENV_NODE !== 'production') {
 const environments = {
   PORT: env.PORT ?? 8080,
   MONGO_URI: env.MONGO_URI,
+  SALT_ROUNDS: Number(env.SALT_ROUNDS) ?? 10,
   JWT_SECRET: env.JWT_SECRET ?? "jXn2r5u8x/A?D*G-KaPdSgVkYp3s6v9y",
   TWOFA_ENCRYPT_KEY: env.TWOFA_ENCRYPT_KEY ?? "E(G+KbPeShVmYq3t6w9z$C&F)J@McQfT"
 }

@@ -4,8 +4,9 @@ import utc from 'dayjs/plugin/utc';
 import { FastifyInstance, FastifyReply, FastifyRequest } from 'fastify';
 import { ELoginStep, ETwoFAStep, IJwtPayload, ILoginBody, IRegisterBody, ITwoFABody } from '../interfaces/auth.interface';
 
+import * as bcrypt from 'bcryptjs';
 import * as speakeasy from 'speakeasy';
-import * as qrcode from 'qrcode';
+import qrcode from 'qrcode';
 import * as CryptoJS from 'crypto-js';
 import environments from '../environments';
 
@@ -17,7 +18,8 @@ export const loginController = async (fastify: FastifyInstance, request: Fastify
 
   try {
     const user = await users.findOne({ email });
-    if (!user || user.password !== password)
+    const checkPassword = await bcrypt.compareSync(password, user?.password);
+    if (!user || !checkPassword)
       return reply.status(401).send({
         statusCode: 401,
         error: "Authentication Failed",
@@ -76,13 +78,6 @@ export const loginController = async (fastify: FastifyInstance, request: Fastify
 
 export const registerController = async (fastify: FastifyInstance, request: FastifyRequest<{ Body: IRegisterBody }>, reply: FastifyReply) => {
   const { email, password } = request.body;
-  const user: IUser = {
-    email,
-    password,
-    role: EUserRole.NonSubscriber,
-    updatedAt: dayjs.utc().toDate(),
-    createdAt: dayjs.utc().toDate(),
-  };
   const users = fastify.mongo.db.collection<IUser>("users");
 
   try {
@@ -93,6 +88,16 @@ export const registerController = async (fastify: FastifyInstance, request: Fast
         error: "Registration Failed",
         message: "This email has already been registered."
       });
+
+    const hashedPassword = await hashPassword(password);
+
+    const user: IUser = {
+      email,
+      password: hashedPassword,
+      role: EUserRole.NonSubscriber,
+      updatedAt: dayjs.utc().toDate(),
+      createdAt: dayjs.utc().toDate(),
+    };
 
     const result = await users.insertOne(user);
     reply.code(201).send(result);
@@ -244,4 +249,10 @@ const getJwtToken = (id: any, email: string, fastify: FastifyInstance) => {
     id
   };
   return fastify.jwt.sign(signPayload);
+}
+
+const hashPassword = async (password: string): Promise<string> => {
+  const salt = await bcrypt.genSaltSync(environments.SALT_ROUNDS);
+  const hashedPassword = await bcrypt.hashSync(password, salt);
+  return hashedPassword;
 }
