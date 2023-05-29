@@ -2,6 +2,7 @@ import fastify, { FastifyInstance } from "fastify";
 import fastifyMongodb from '@fastify/mongodb';
 import fastifyJwt from '@fastify/jwt';
 import fastifyJoi from 'fastify-joi';
+import fastifyWebsocket, { SocketStream } from "@fastify/websocket";
 import environments from "./environments";
 import routesPlugin from './routes';
 import { FastifyRequest, FastifyReply } from "fastify";
@@ -37,6 +38,8 @@ class App {
   }
 
   private async registerPlugins() {
+    this.server.register(fastifyWebsocket);
+
     this.server.register((fastifyMongodb), { url: environments.MONGO_URI });
 
     this.server.register(fastifyJwt, {
@@ -46,17 +49,26 @@ class App {
     this.server.register(fastifyJoi);
 
     this.server.addHook("onRequest", async (request: FastifyRequest, reply: FastifyReply) => {
-      const publicRoutes = [
-        "auth/login",
-        "auth/register"
-      ]
+      if (request.ws) {
+        try {
+          const { authorization }  = request.headers;
+          const token = authorization?.replace("Bearer ", "");
+          await this.server.jwt.verify(token);
+        } catch (err) {
+          reply.send(err.message);
+        }
+      } else {
+        const publicRoutes = [
+          "auth/login",
+          "auth/register"
+        ]
+        if (publicRoutes.includes(request.url.replace("/api/v1/", ""))) return;
 
-      if (publicRoutes.includes(request.url.replace("/api/v1/", ""))) return;
-
-      try {
-        await request.jwtVerify()
-      } catch (err) {
-        reply.send(err)
+        try {
+          await request.jwtVerify()
+        } catch (err) {
+          reply.send(err)
+        }
       }
     })
   }

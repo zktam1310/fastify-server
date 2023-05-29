@@ -1,9 +1,11 @@
 import AuthRoutePlugin from "./auth.route";
 import UserRoutePlugin from "./user.route";
+import WebsocketRoutePlugin from "./websocket.route";
 
 const routesPlugin = [
   AuthRoutePlugin,
-  UserRoutePlugin
+  UserRoutePlugin,
+  WebsocketRoutePlugin
 ]
 
 export default routesPlugin;
