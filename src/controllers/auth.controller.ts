@@ -17,14 +17,17 @@ export const loginController = async (fastify: FastifyInstance, request: Fastify
   const users = fastify.mongo.db.collection<IUser>("users");
 
   try {
+    const errorResponse = {
+      statusCode: 401,
+      error: "Authentication Failed",
+      message: "Invalid email/password."
+    };
+
     const user = await users.findOne({ email });
+    if (!user) return reply.status(401).send(errorResponse);
+
     const checkPassword = await bcrypt.compareSync(password, user?.password);
-    if (!user || !checkPassword)
-      return reply.status(401).send({
-        statusCode: 401,
-        error: "Authentication Failed",
-        message: "Invalid email/password."
-      });
+    if (!checkPassword) reply.status(401).send(errorResponse);
 
     let response;
 
